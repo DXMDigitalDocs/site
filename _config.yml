@@ -15,7 +15,7 @@
 # in the templates via {{ site.myvariable }}.
 title: Hello DM
 description: A Jekyll theme for documentation
-baseurl: "/DMDigitalConstructionDoc" # the subpath of your site, e.g. /blog
+baseurl: "" # the subpath of your site, e.g. /blog
 url: "https://ibrahimfahdah.github.io/DMDigitalConstructionDoc" # the base hostname & protocol for your site, e.g. http://example.com
 repository: just-the-docs/just-the-docs # for github-metadata
 
