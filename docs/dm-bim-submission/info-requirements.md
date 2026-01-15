@@ -1,5 +1,5 @@
 ---
-title: Info. requirements
+title: Information Requirements
 layout: default
 parent: DM BIM Submission
 nav_order: 1

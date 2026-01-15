@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFC Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        #viewer-container {
+            width: 100vw;
+            height: 100vh;
+        }
+        #controls {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 18px;
+            margin-right: 8px;
+            cursor: pointer;
+            border: none;
+            background: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #loading-status {
+            margin-left: 10px;
+            font-weight: bold;
+            color: #333;
+        }
+        #file-info {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <input type="file" id="file-input" accept=".ifc" style="display: none;">
+        <button id="load-file">Load IFC File</button>
+        <button id="zoom-in">Zoom In (+)</button>
+        <button id="zoom-out">Zoom Out (-)</button>
+        <button id="reset-view">Reset View</button>
+        <span id="loading-status">Ready to load IFC file</span>
+    </div>
+    <div id="file-info" style="display: none;"></div>
+    <div id="viewer-container"></div>
+
+    <script src="https://unpkg.com/three@0.127.0/build/three.min.js"></script>
+    <script src="https://unpkg.com/three@0.127.0/examples/js/controls/OrbitControls.js"></script>
+
+    <script src="./web-ifc.js"></script>
+
+    <script>
+    // Wait for page to load
+    window.addEventListener('load', function() {
+        console.log('Page loaded, WebIFC available:', typeof WebIFC !== 'undefined');
+        if (typeof window.startViewer === 'function') {
+            window.startViewer();
+        }
+    });
+    </script>
+
+    <script>
+    let scene, camera, renderer, controls;
+    let modelCenter = new THREE.Vector3(0, 0, 0);
+    let defaultCameraPos = new THREE.Vector3(50, 50, 50);
+    const loadingStatus = document.getElementById('loading-status');
+    const fileInfo = document.getElementById('file-info');
+
+    // Initialize viewer
+    function initViewer() {
+        const container = document.getElementById('viewer-container');
+
+        // Scene
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x8cc4f4);
+
+        // Camera
+        camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            1000
+        );
+        camera.position.set(50, 50, 50);
+
+        // Renderer
+        renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        container.appendChild(renderer.domElement);
+
+        // Controls
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // Lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+        dirLight.position.set(100, 100, 100);
+        scene.add(dirLight);
+
+        // Grid
+        const grid = new THREE.GridHelper(100, 100);
+        scene.add(grid);
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    }
+
+    // Load IFC file
+    async function loadIFC(file) {
+        loadingStatus.textContent = 'Loading...';
+
+        try {
+            // Read file
+            const data = await file.arrayBuffer();
+            const ifcData = new Uint8Array(data);
+
+            // Initialize web-ifc
+            const ifcApi = new WebIFC.IfcAPI();
+
+            // Set WASM path
+            ifcApi.SetWasmPath('./wasm/');
+
+            await ifcApi.Init();
+
+            loadingStatus.textContent = 'Parsing IFC...';
+            const modelID = ifcApi.OpenModel(ifcData);
+
+            loadingStatus.textContent = 'Loading geometry...';
+            const flatMeshes = ifcApi.LoadAllGeometry(modelID);
+
+            let meshCount = 0;
+            const geometries = [];
+
+            for (let i = 0; i < flatMeshes.size(); i++) {
+                const flatMesh = flatMeshes.get(i);
+
+                for (let j = 0; j < flatMesh.geometries.size(); j++) {
+                    try {
+                        const geom = flatMesh.geometries.get(j);
+                        const verts = ifcApi.GetVertexArray(geom.geometryExpressID, modelID);
+                        const indices = ifcApi.GetIndexArray(geom.geometryExpressID, modelID);
+
+                        const geometry = new THREE.BufferGeometry();
+                        geometry.setAttribute('position', new THREE.Float32BufferAttribute(verts, 3));
+                        geometry.setIndex(new THREE.Uint32BufferAttribute(indices, 1));
+                        geometry.computeVertexNormals();
+
+                        const material = new THREE.MeshPhongMaterial({
+                            color: new THREE.Color().setHex(Math.random() * 0xffffff),
+                            side: THREE.DoubleSide
+                        });
+
+                        const mesh = new THREE.Mesh(geometry, material);
+
+                        const matrix = new THREE.Matrix4().fromArray(geom.flatTransformation);
+                        mesh.applyMatrix4(matrix);
+
+                        scene.add(mesh);
+                        geometries.push(mesh);
+                        meshCount++;
+                    } catch (e) {
+                        // Skip problematic geometry
+                    }
+                }
+            }
+
+            // Fit camera to model
+            if (geometries.length > 0) {
+                const box = new THREE.Box3();
+                geometries.forEach(mesh => box.expandByObject(mesh));
+
+                const center = box.getCenter(new THREE.Vector3());
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+
+                // Calculate camera distance to fit model in view
+                const fov = camera.fov * (Math.PI / 180);
+                const distance = maxDim / (2 * Math.tan(fov / 2)) * 1.5;
+
+                // Position camera at a 45-degree angle
+                const offset = distance / Math.sqrt(3);
+                camera.position.set(
+                    center.x + offset,
+                    center.y + offset,
+                    center.z + offset
+                );
+                camera.lookAt(center);
+                controls.target.copy(center);
+
+                // Store default positions for reset button
+                modelCenter.copy(center);
+                defaultCameraPos.copy(camera.position);
+
+                // Update camera's near and far planes based on model size
+                camera.near = maxDim / 100;
+                camera.far = maxDim * 100;
+                camera.updateProjectionMatrix();
+                controls.update();
+
+                console.log('Model bounds:', {
+                    center: center,
+                    size: size,
+                    maxDim: maxDim,
+                    cameraPosition: camera.position
+                });
+            }
+
+            loadingStatus.textContent = `Loaded ${meshCount} objects`;
+            loadingStatus.style.color = 'green';
+
+            fileInfo.innerHTML = `<strong>File:</strong> ${file.name}<br><strong>Objects:</strong> ${meshCount}`;
+            fileInfo.style.display = 'block';
+
+        } catch (error) {
+            console.error('Error:', error);
+            loadingStatus.textContent = 'Error loading file';
+            loadingStatus.style.color = 'red';
+        }
+    }
+
+    // Setup file input
+    document.getElementById('load-file').addEventListener('click', () => {
+        document.getElementById('file-input').click();
+    });
+
+    document.getElementById('file-input').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            loadIFC(file);
+        }
+    });
+
+    // Zoom controls
+    document.getElementById('zoom-in').addEventListener('click', () => {
+        const direction = new THREE.Vector3();
+        camera.getWorldDirection(direction);
+        camera.position.addScaledVector(direction, 5);
+        controls.update();
+    });
+
+    document.getElementById('zoom-out').addEventListener('click', () => {
+        const direction = new THREE.Vector3();
+        camera.getWorldDirection(direction);
+        camera.position.addScaledVector(direction, -5);
+        controls.update();
+    });
+
+    document.getElementById('reset-view').addEventListener('click', () => {
+        camera.position.copy(defaultCameraPos);
+        controls.target.copy(modelCenter);
+        controls.update();
+    });
+
+    // Start viewer after WebIFC is loaded
+    window.startViewer = function() {
+        console.log('Starting viewer...');
+        initViewer();
+
+        // Try to auto-load sample.ifc
+        fetch('./models/sample.ifc')
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
+                }
+                throw new Error('No default file');
+            })
+            .then(blob => {
+                const file = new File([blob], 'sample.ifc');
+                loadIFC(file);
+            })
+            .catch(() => {
+                loadingStatus.textContent = 'Click "Load IFC File" to begin';
+            });
+    };
+    </script>
+</body>
+</html>
