@@ -2,7 +2,7 @@
 title: FAQs
 layout: default
 parent: DM BIM Submission
-nav_order: 4
+nav_order: 5
 ---
 
 ## Frequently Asked Technical Questions
