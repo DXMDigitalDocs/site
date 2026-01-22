@@ -1,5 +1,5 @@
 ---
-title: BIM 3D Viewer
+title: BIM 3D Viewer (2)
 layout: default
 parent: Tools
 nav_order: 4
