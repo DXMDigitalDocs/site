@@ -26,6 +26,6 @@ The Model Attribute Matrix was created to provide the standardized information n
 Below is the shortlist for all categories covered within this Matrix, each linked to the related category sheet. The Equivalent IFC Class is also summarized next to the categories list for easy indication.
 
 
-{% for item in site.data.appendix_b_files %}[{{ item.name }}]({{ site.baseurl }}/docs/dm-bim-submission/info-requirements/attributes/#{{ item.name | downcase }}){% unless forloop.last %} | {% endunless %}{% endfor %}
+{% for item in site.data.appendix_b_files %}[{{ item.name }}]({{ site.baseurl }}/docs/dm-bim-submission/info-requirements/attributes/#{{ item.name | downcase | replace: " ", "-" | replace: "(", "" | replace: ")", "" }}){% unless forloop.last %} | {% endunless %}{% endfor %}
 
 ---

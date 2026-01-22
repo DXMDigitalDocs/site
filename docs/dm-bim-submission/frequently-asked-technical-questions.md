@@ -224,7 +224,7 @@ For the second case, a parameter called ‘IfcSpatialContainer’ can be created
 
 Yes. We actually recommend you checking model quality locally before uploading to the submission platform. The following tools can be used locally to check the model before submission:
 
-- **BIM Viewer**: Using a free IFC viewer can be used to inspect the model visualization and element hosting in each floor. The BIM support team internally use BIMcollab Zoom viewer. The software allows users to checking the model hierarchy tree, level naming, entity properties, and hosting level. The Smartview feature in the software is a powerful tool to find issues in the model. Check [**APPENDIX III**](#appendix-iii-bimcollab-zoom) for some tooltips on using the software. The viewer can be downloaded from
+- **BIM Viewer**: Using a free IFC viewer can be used to inspect the model visualization and element hosting in each floor. The BIM support team internally use BIMcollab Zoom viewer. The software allows users to checking the model hierarchy tree, level naming, entity properties, and hosting level. The Smartview feature in the software is a powerful tool to find issues in the model. Check **APPENDIX III** in the standard document for some tooltips on using the software. The viewer can be downloaded from
 
 - **QAQC App**: The **application** checks if the IFC models have any critical issues. The application can be downloaded from [QA\QC app download link](https://bim.geodubai.ae/ebim/dmbim.qaqcchecker.zip)
 
@@ -262,7 +262,7 @@ The figures below shows the Z values of the IfcSite and the GA\_GateLevel level 
 
 ### **Q41: The QA/QC app reports many critical issues. What could be the issues in the BIM models?**
 
-Check [**APPENDIX I**](#appendix-i-qaqc-issues) for a list of common QAQC and their reasons and resolution.
+Check [**APPENDIX I**](#appendix-i--qaqc-issues) for a list of common QAQC and their reasons and resolution.
 
 ### **Q42: Why do I see three types of QA\\QC issues (Warning, Error and Critical)?**
 
