@@ -16,7 +16,7 @@ The official BIM standard and the related materials can be found on Build-In-Dub
 ---
 
 {: .warning }
-> Disclaimer: The content published here is sourced from Dubai Municipality materials and is shared for informational purposes only. This is not an official Dubai Municipality publication.
+> Disclaimer: The content published here is sourced from **Dubai Municipality public materials** and is shared for informational purposes only. This is not an official Dubai Municipality publication.
 
 
 [BID Website]: https://buildindubai.gov.ae/bim

@@ -17,7 +17,7 @@ This website is dedicated to helping permit applicants in Dubai understand the B
 ## Disclaimer
 
 {: .warning }
->  The content published here is sourced from Dubai Municipality materials and is shared for informational purposes only. This is not an official Dubai Municipality website.
+>  The content published here is sourced from **Dubai Municipality public materials** and is shared for informational purposes only. This is not an official Dubai Municipality website.
 
 DxM Digital Docs is currently primarily maintained by [Dr. Ibrahim Fahdah](https://www.linkedin.com/in/dr-ibrahim-fahdah-13aa80a4/).
 
