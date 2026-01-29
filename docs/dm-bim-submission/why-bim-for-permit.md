@@ -11,12 +11,12 @@ nav_order: 1
 - 2D drawings are reviewed manually  
 - Information is spread across many files  
 - High risk of missing or inconsistent data  
-- Long review times and repeated comments  
+- 2D drawings are not machine readable, BIM is.
 
 ## 2. What BIM Changes
 - One digital model contains geometry and information  
 - Data is structured, consistent, and machine-readable  
-- The same model can be reused across project stages  
+- The same model can be reused across project permitting  
 - Less interpretation, more clarity  
 
 ## 3. What "Digital Permit" Means
@@ -26,13 +26,12 @@ nav_order: 1
 - Better traceability and transparency  
 
 ## 4. How BIM Supports Digital Permits
-- Accurate building geometry (areas, heights, setbacks)  
+- Accurate building geometry (areas, dimensions)  
 - Clear classification of building elements  
 - Embedded properties required for code checks  
 - Ability to run automated or assisted compliance checks  
 
 ## 5. Benefits for Consultants
-- Fewer review comments and resubmissions  
 - Clearer requirements from authorities  
 - Faster approval cycles  
 - Better internal quality control  
