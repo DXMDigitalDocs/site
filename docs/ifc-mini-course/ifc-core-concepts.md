@@ -143,4 +143,57 @@ This structure answers questions like:
 - Which floor does it belong to?
 - Which space contains it?
 
+## Current IFC Schema Versions
+
+IFC has evolved over time. Different versions support different capabilities, domains, and use cases.
+
+Choosing the correct IFC version is important for interoperability and long-term use.
+
+---
+
+### IFC2x3 (Older, Widely Used)
+
+- Mature and stable ISO standard
+- Still supported by most BIM tools
+- Common in legacy projects and existing mandates
+- Limited support for newer concepts
+
+Official specification: [IFC2x3](https://standards.buildingsmart.org/IFC/RELEASE/IFC2x3/FINAL/HTML/)
+
+---
+
+### IFC4 (Core Modern Version)
+
+- Improved data structure and consistency
+- Better geometry definitions
+- Stronger and clearer semantics
+- Recommended baseline for most modern building projects
+
+Official specification: [IFC4.2](https://standards.buildingsmart.org/IFC/DEV/IFC4_2/FINAL/HTML/)
+
+---
+
+### IFC4.3 (Infrastructure Extension)
+
+- Extends IFC beyond buildings
+- Supports roads, railways, bridges, and other infrastructure assets
+- Part of the IFC for Infrastructure initiative
+
+Official specification:  [IFC4.3](https://ifc43-docs.standards.buildingsmart.org/)
+
+---
+
+### Which IFC Version Should Be Used?
+
+There is no single answer. The correct version depends on:
+- Project type (building vs infrastructure)
+- Authority or client requirements
+- Software support
+- Intended use (coordination, permitting, FM, archiving)
+
+In general:
+- **IFC4** is recommended for modern building projects
+- **IFC4.3** is recommended for infrastructure projects
+- **IFC2x3** should be used only when required for compatibility
+
 
