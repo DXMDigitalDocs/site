@@ -121,3 +121,5 @@ IFC organizes buildings in a clear hierarchy:
 
 This structure allows software and reviewers to **understand the building logically**, not just visually.
 
+---
+<img src="{{ site.baseurl }}/assets/ifc-mini-course/image1.png" style="width:50%"  alt="screenshot" />
