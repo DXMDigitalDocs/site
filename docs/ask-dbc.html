@@ -1,0 +1,49 @@
+---
+title: Ask DBC
+layout: chat
+nav_order: 2
+---
+
+<div class="back-link">
+  <a href="{{ site.baseurl }}/">&larr; Back to DxM Digital Docs</a>
+</div>
+
+<df-messenger project-id="dxmdigitaldocs"
+              agent-id="68eae366-5cd9-4694-8828-c5a2f2923887"
+              language-code="en"
+              max-query-length="-1"
+              storage-option="none">
+    <df-messenger-chat chat-title="Chat with Dubai Building Code">
+    </df-messenger-chat>
+</df-messenger>
+<style>
+    .back-link {
+        padding: 12px 16px;
+        background: #fff;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .back-link a {
+        color: #1a73e8;
+        text-decoration: none;
+        font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-size: 14px;
+    }
+    .back-link a:hover {
+        text-decoration: underline;
+    }
+    df-messenger {
+        display: block;
+        position: fixed;
+        z-index: 999;
+        --df-messenger-font-color: #000;
+        --df-messenger-font-family: Google Sans;
+        --df-messenger-chat-background: #f3f6fc;
+        --df-messenger-message-user-background: #d3e3fd;
+        --df-messenger-message-bot-background: #fff;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 60%;
+        max-width: 900px;
+    }
+</style>
