@@ -1,4 +1,4 @@
-﻿---
+---
 title: What Is openBIM?
 layout: default
 parent: IFC Mini Course
