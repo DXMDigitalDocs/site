@@ -1,8 +1,8 @@
 ---
-title: BIM 3D Viewer 
+title: IFClite Viewer
 layout: default
-parent: Tools
-nav_order: 3
+parent: openBIM Tools
+nav_order: 1
 ---
 
 ## IFClite (Works fully offline - no files are uploaded to external servers)

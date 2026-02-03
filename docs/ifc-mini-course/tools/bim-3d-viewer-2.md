@@ -1,8 +1,8 @@
 ---
-title: BIM 3D Viewer (2)
+title: BIM 3D Viewer
 layout: default
-parent: Tools
-nav_order: 4
+parent: openBIM Tools
+nav_order: 2
 ---
 
 ## BIM 3D Model Viewer (Works fully offline - no files are uploaded to external servers)
