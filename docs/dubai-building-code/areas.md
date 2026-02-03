@@ -18,6 +18,11 @@ An example calculation using a sample plan is shown below.
 
 ---
 
+# Gross floor area (GFA)
+Measurement used by Planning Authorities in Dubai to define the floor area ratio (FAR), where FAR is the ratio of GFA to plot area. The building GFA is the sum of the GFA of all floors, measured to the exterior surface of the external wall thickness and from the centrelines of the common walls joining two spaces. The measurement excludes external wall features such as corniches, brackets, and façade cladding materials.
+
+---
+
 # Gross area (GA)
 The floor area within the inside perimeter of the exterior walls of a building. The measurement excludes shafts and courtyards, but includes corridors, stairways, ramps, closets, base of atria (or similar voids) and the thickness of interior walls, columns or other features.
 
@@ -36,5 +41,3 @@ An example calculation using a sample plan is shown below.
 
 ---
 
-# Gross floor area (GFA)
-Measurement used by Planning Authorities in Dubai to define the floor area ratio (FAR), where FAR is the ratio of GFA to plot area. The building GFA is the sum of the GFA of all floors, measured to the exterior surface of the external wall thickness and from the centrelines of the common walls joining two spaces. The measurement excludes external wall features such as corniches, brackets, and façade cladding materials.
