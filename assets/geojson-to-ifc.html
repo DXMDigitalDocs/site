@@ -190,7 +190,7 @@ FILE_NAME ('', '${new Date().toISOString().split('.')[0]}', (''), (''), 'Process
 FILE_SCHEMA (('IFC4'));
 ENDSEC;
 DATA;
-#1=IFCPROJECT('3a8rYESNT5hBp$vvAd6Tjo',#2,'GeoJSON to IFC',$,$,$,$,(#27,#30),#7);
+#1=IFCPROJECT('18ZfMm7FH9LgHg$09_Uaev',#2,'GeoJSON to IFC',$,$,$,$,(#27,#30),#7);
 #2=IFCOWNERHISTORY(#5,#6,$,.ADDED.,${Math.floor(Date.now() / 1000)},$,$,0);
 #3=IFCPERSON($,'User','',$,$,$,$,$);
 #4=IFCORGANIZATION($,'Unspecified',$,$,$);
@@ -235,38 +235,44 @@ DATA;
             ifcContent += `#33=IFCCARTESIANPOINT((${firstX},${firstY},0.));\n`;
             ifcContent += `#34=IFCDIRECTION((1.,0.,0.));\n`;
             ifcContent += `#35=IFCDIRECTION((0.,0.,1.));\n`;
-            ifcContent += `#36=IFCSITE('3XKy6tRf99jBh83aZoQTu8',#2,'Site',$,$,#31,$,$,$,$,$,$,$,$);\n`;
-            ifcContent += `#37=IFCBUILDING('2gnqiKy194uPfhgOS8zHEf',#2,'Building',$,$,#38,$,$,$,$,$,$);\n`;
+            ifcContent += `#36=IFCSITE('1E_ksQeVLCHujKRz8xJT$d',#2,'Site',$,$,#31,$,$,$,$,$,$,$,$);\n`;
+            ifcContent += `#37=IFCBUILDING('0CNEEXONP2fRvtp01mvDeG',#2,'Building',$,$,#38,$,$,$,$,$,$);\n`;
             ifcContent += `#38=IFCLOCALPLACEMENT(#31,#39);\n`;
             ifcContent += `#39=IFCAXIS2PLACEMENT3D(#40,$,$);\n`;
             ifcContent += `#40=IFCCARTESIANPOINT((0.,0.,0.));\n`;
-            ifcContent += `#41=IFCRELAGGREGATES('3fE1$aVMrCQB7URSDG_HVm',#2,$,$,#1,(#36));\n`;
-            ifcContent += `#42=IFCRELAGGREGATES('1hA3r$vcnF7A4EiLEOWUiQ',#2,$,$,#36,(#37));\n`;
+            ifcContent += `#41=IFCBUILDINGSTOREY('2WwSZp9U59rghP8lS9Gkbe',#2,'Parcel',$,$,#42,$,$,$,$);\n`;
+            ifcContent += `#42=IFCLOCALPLACEMENT(#31,#43);\n`;
+            ifcContent += `#43=IFCAXIS2PLACEMENT3D(#44,$,$);\n`;
+            ifcContent += `#44=IFCCARTESIANPOINT((0.,0.,0.));\n`;
+            ifcContent += `#45=IFCRELAGGREGATES('0DExhno294RPYjloaUUwnB',#2,$,$,#1,(#36));\n`;
+            ifcContent += `#46=IFCRELAGGREGATES('3WdI$ZpJH1jfqxj1aBRtJo',#2,$,$,#36,(#37));\n`;
+            ifcContent += `#47=IFCRELAGGREGATES('0pBqz4xeHEUw6SPQIZ$cbJ',#2,$,$,#37,(#41));\n`;
 
-            // Skip #43-#54 (these were the old points and polyline)
-            // Add placeholder entries #43-#54 to maintain numbering consistency
-            // Actually, we'll just skip them and put in comments or skip entirely
-
+            // Skip #48-#59 (these are the old points and polyline)
             // Calculate the polyline ID - it will be after all the cartesian points
-            // Points start at #66, so polyline will be at #66 + number of points
-            const polylineId = 66 + transformedCoords.length;
+            // Points start at #75, so polyline will be at #75 + number of points
+            const polylineId = 75 + transformedCoords.length;
 
-            // #55 references the new polyline
-            ifcContent += `#55=IFCARBITRARYCLOSEDPROFILEDEF(.AREA.,$,#${polylineId});\n`;
-            ifcContent += `#56=IFCEXTRUDEDAREASOLID(#55,#58,#57,0.2);\n`;
-            ifcContent += `#57=IFCDIRECTION((0.,0.,1.));\n`;
-            ifcContent += `#58=IFCAXIS2PLACEMENT3D($,$,$);\n`;
-            ifcContent += `#59=IFCSHAPEREPRESENTATION(#27,'Body','SweptSolid',(#56));\n`;
-            ifcContent += `#60=IFCPRODUCTDEFINITIONSHAPE($,$,(#59));\n`;
-            ifcContent += `#61=IFCBUILDINGELEMENTPROXY('2p6GgMdjTC5x1OtoNoSy1Z',#2,'Geo Polygon',$,$,#62,#60,$,$);\n`;
-            ifcContent += `#62=IFCLOCALPLACEMENT(#31,#63);\n`;
-            ifcContent += `#63=IFCAXIS2PLACEMENT3D(#64,$,$);\n`;
-            ifcContent += `#64=IFCCARTESIANPOINT((0.,0.,0.));\n`;
-            ifcContent += `#65=IFCRELCONTAINEDINSPATIALSTRUCTURE('1mZh50vIrEABlmFsgWXCu2',#2,$,$,(#61),#37);\n`;
+            // #60 references the new polyline
+            ifcContent += `#60=IFCARBITRARYCLOSEDPROFILEDEF(.AREA.,$,#${polylineId});\n`;
+            ifcContent += `#61=IFCEXTRUDEDAREASOLID(#60,#63,#62,0.2);\n`;
+            ifcContent += `#62=IFCDIRECTION((0.,0.,1.));\n`;
+            ifcContent += `#63=IFCAXIS2PLACEMENT3D($,$,$);\n`;
+            ifcContent += `#64=IFCSHAPEREPRESENTATION(#27,'Body','SweptSolid',(#61));\n`;
+            ifcContent += `#65=IFCPRODUCTDEFINITIONSHAPE($,$,(#64));\n`;
+            ifcContent += `#66=IFCSTYLEDITEM(#61,(#67),$);\n`;
+            ifcContent += `#67=IFCSURFACESTYLE($,.BOTH.,(#68));\n`;
+            ifcContent += `#68=IFCSURFACESTYLERENDERING(#69,$,$,$,$,$,$,$,.BLINN.);\n`;
+            ifcContent += `#69=IFCCOLOURRGB('Orange',1.,0.5,0.);\n`;
+            ifcContent += `#70=IFCBUILDINGELEMENTPROXY('0TRXlmWHHEm89nQ$7JmFzo',#2,'Geo Polygon',$,$,#71,#65,$,$);\n`;
+            ifcContent += `#71=IFCLOCALPLACEMENT(#42,#72);\n`;
+            ifcContent += `#72=IFCAXIS2PLACEMENT3D(#73,$,$);\n`;
+            ifcContent += `#73=IFCCARTESIANPOINT((0.,0.,0.));\n`;
+            ifcContent += `#74=IFCRELCONTAINEDINSPATIALSTRUCTURE('3CxFDmLCrAEgrI9P3Q2Oeh',#2,$,$,(#70),#41);\n`;
 
-            // Add new IFCCARTESIANPOINT entries starting from #66
+            // Add new IFCCARTESIANPOINT entries starting from #75
             const pointIds = [];
-            let currentId = 66;
+            let currentId = 75;
 
             for (const [x, y] of transformedCoords) {
                 ifcContent += `#${currentId}=IFCCARTESIANPOINT((${x},${y}));\n`;
