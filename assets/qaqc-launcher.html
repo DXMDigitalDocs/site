@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFC QA/QC Tool Launcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+        }
+
+        .launcher-container {
+            background: white;
+            border-radius: 16px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        h1 {
+            color: #333;
+            font-size: 32px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .description {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .launch-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 48px;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .launch-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .launch-button:active {
+            transform: translateY(0);
+        }
+
+        .features {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+
+        .feature-list {
+            list-style: none;
+            text-align: left;
+            display: inline-block;
+        }
+
+        .feature-list li {
+            color: #555;
+            padding: 8px 0;
+            font-size: 14px;
+        }
+
+        .feature-list li::before {
+            content: "✓ ";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .note {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #f0f4ff;
+            border-radius: 8px;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="launcher-container">
+        <div class="icon">🏗️</div>
+        <h1>IFC QA/QC Parser Tool</h1>
+        <p class="description">
+            A powerful WebAssembly-based IFC file parser that analyzes Building Information Models
+            directly in your browser. Upload IFC files and get detailed statistics about elements,
+            relations, and properties.
+        </p>
+
+        <button class="launch-button" onclick="launchApp()">
+            Launch QA/QC Tool
+        </button>
+
+        <div class="features">
+            <ul class="feature-list">
+                <li>Parse IFC files entirely in the browser</li>
+                <li>Detailed element type breakdown</li>
+                <li>Relations and properties analysis</li>
+                <li>No server upload required - complete privacy</li>
+                <li>Fast WebAssembly performance</li>
+            </ul>
+        </div>
+
+        <div class="note">
+            <strong>Note:</strong> The tool will open in a new tab. Make sure pop-ups are allowed in your browser.
+        </div>
+    </div>
+
+    <script>
+        function launchApp() {
+            // Get the current directory and construct the path to qaqc-wasm-app.html
+            const currentUrl = window.location.href;
+            const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+            const appUrl = baseUrl + 'qaqc-wasm-app.html';
+
+            // Open in a new tab
+            const newTab = window.open(appUrl, '_blank');
+
+            // Check if popup/tab was blocked
+            if (!newTab || newTab.closed || typeof newTab.closed === 'undefined') {
+                alert('Pop-up blocked! Please allow pop-ups for this site and try again.');
+            }
+        }
+
+        // Optional: Allow launching with Enter key
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                launchApp();
+            }
+        });
+    </script>
+</body>
+</html>

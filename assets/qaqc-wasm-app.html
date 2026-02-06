@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IFC Parser WASM</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            border-bottom: 3px solid #007acc;
+            padding-bottom: 10px;
+        }
+
+        .upload-area {
+            border: 2px dashed #007acc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            .upload-area:hover {
+                background-color: #e8f4fd;
+            }
+
+            .upload-area.drag-over {
+                background-color: #cce5ff;
+                border-color: #0056b3;
+            }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        button {
+            background-color: #007acc;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: background-color 0.3s;
+        }
+
+            button:hover {
+                background-color: #005a9e;
+            }
+
+            button:disabled {
+                background-color: #cccccc;
+                cursor: not-allowed;
+            }
+
+        #results {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border-left: 4px solid #007acc;
+        }
+
+            .stat-card h3 {
+                margin-top: 0;
+                color: #007acc;
+            }
+
+        .type-breakdown {
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+
+        .type-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+            .type-item:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007acc;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #c62828;
+            display: none;
+            margin: 20px 0;
+        }
+
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ IFC Parser WebAssembly</h1>
+        <p>Upload an IFC file to analyze its contents. This parser runs entirely in your browser using WebAssembly.</p>
+
+        <div class="upload-area" id="uploadArea">
+            <p style="font-size: 18px; margin: 0;">📁 Click to select an IFC file or drag & drop here</p>
+            <p style="color: #666; font-size: 14px; margin: 10px 0 0 0;">Supported formats: .ifc</p>
+        </div>
+
+        <input type="file" id="fileInput" accept=".ifc">
+
+        <div style="text-align: center;">
+            <button id="parseBtn" onclick="parseIfc()" disabled>Parse IFC File</button>
+            <button onclick="clearResults()">Clear</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Parsing IFC file...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div id="results">
+            <h2>📊 IFC File Statistics</h2>
+            <div id="statsContent"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        let selectedFile = null;
+        let dotnetRuntime = null;
+        let wasmLoaded = false;
+
+        // Setup file upload
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const parseBtn = document.getElementById('parseBtn');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                uploadArea.innerHTML = `<p style="color: #007acc;">✓ Selected: ${selectedFile.name}</p>`;
+                parseBtn.disabled = false;
+            }
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('drag-over');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('drag-over');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('drag-over');
+
+            if (e.dataTransfer.files.length > 0) {
+                selectedFile = e.dataTransfer.files[0];
+                fileInput.files = e.dataTransfer.files;
+                uploadArea.innerHTML = `<p style="color: #007acc;">✓ Selected: ${selectedFile.name}</p>`;
+                parseBtn.disabled = false;
+            }
+        });
+
+        // Load .NET WASM runtime
+        async function loadWasmRuntime() {
+            try {
+                console.log('Loading .NET WebAssembly runtime...');
+
+
+                const { dotnet } = await import('./qaqc-wasm-app-assets/_framework/dotnet.js');
+                const runtime = await dotnet
+                    .withDiagnosticTracing(false)
+                    .create();
+
+                // No .dll extension for Exe projects
+                const exports = await runtime.getAssemblyExports('QaQcWasmApp');
+
+                // Access using the correct namespace
+                window.IfcParserWasm = exports.QaQcWasmApp.IfcParserWasm;
+                dotnetRuntime = runtime;
+
+                wasmLoaded = true;
+                console.log('✓ .NET WASM runtime loaded successfully');
+            } catch (error) {
+                console.error('Failed to load WASM runtime:', error);
+                console.error('Error details:', error.stack);
+                showError(`Failed to load WASM runtime: ${error.message}`);
+            }
+        }
+
+        // Initialize WASM on page load
+        loadWasmRuntime();
+
+        // Make functions global
+        window.parseIfc = parseIfc;
+        window.clearResults = clearResults;
+
+        async function parseIfc() {
+            if (!selectedFile) {
+                showError('Please select a file first');
+                return;
+            }
+
+            if (!wasmLoaded) {
+                showError('WASM runtime is still loading, please wait...');
+                return;
+            }
+
+            hideError();
+            showLoading(true);
+            document.getElementById('results').style.display = 'none';
+            parseBtn.disabled = true;
+
+            try {
+                // Read file as array buffer
+                const arrayBuffer = await selectedFile.arrayBuffer();
+                const bytes = new Uint8Array(arrayBuffer);
+
+                console.log(`Parsing IFC file: ${selectedFile.name} (${bytes.length} bytes)`);
+
+                // Call the WASM function to parse the IFC file
+                const jsonResult = window.IfcParserWasm.LoadIfcAndGetJson(bytes);
+
+                // Parse the JSON result
+                const stats = JSON.parse(jsonResult);
+
+                // Check if there was an error
+                if (stats.error) {
+                    showError(`IFC parsing error: ${stats.error}`);
+                    console.error('Stack trace:', stats.stackTrace);
+                    return;
+                }
+
+                console.log('IFC parsed successfully:', stats);
+                displayResults(stats);
+
+            } catch (error) {
+                showError(`Error parsing IFC: ${error.message}`);
+                console.error('Full error:', error);
+            } finally {
+                showLoading(false);
+                parseBtn.disabled = false;
+            }
+        }
+
+        function displayResults(stats) {
+            const statsContent = document.getElementById('statsContent');
+
+            let html = `
+                        <div class="stat-card">
+                            <h3>📦 Total Elements</h3>
+                            <p style="font-size: 32px; font-weight: bold; margin: 10px 0;">${stats.totalNodes.toLocaleString()}</p>
+                        </div>
+
+                        <div class="stat-card">
+                            <h3>🔗 Relations</h3>
+                            <p>${stats.totalRelations.toLocaleString()}</p>
+                        </div>
+
+                        <div class="stat-card">
+                            <h3>📋 Properties</h3>
+                            <p>Property Sets: ${stats.totalPropertySets.toLocaleString()}</p>
+                            <p>Total Properties: ${stats.totalProperties.toLocaleString()}</p>
+                        </div>
+
+                        <div class="stat-card">
+                            <h3>🏗️ Element Type Breakdown</h3>
+                            <div class="type-breakdown">
+                    `;
+
+            for (const [type, count] of Object.entries(stats.typeBreakdown)) {
+                html += `
+                            <div class="type-item">
+                                <span>${type}</span>
+                                <span><strong>${count}</strong></span>
+                            </div>
+                        `;
+            }
+
+            html += `
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <h3>📄 Raw Data</h3>
+                            <pre>${JSON.stringify(stats, null, 2)}</pre>
+                        </div>
+                    `;
+
+            statsContent.innerHTML = html;
+            document.getElementById('results').style.display = 'block';
+        }
+
+        function showLoading(show) {
+            document.getElementById('loading').style.display = show ? 'block' : 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+
+        function clearResults() {
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            selectedFile = null;
+            fileInput.value = '';
+            parseBtn.disabled = true;
+            uploadArea.innerHTML = `
+                        <p style="font-size: 18px; margin: 0;">📁 Click to select an IFC file or drag & drop here</p>
+                        <p style="color: #666; font-size: 14px; margin: 10px 0 0 0;">Supported formats: .ifc</p>
+                    `;
+        }
+
+        console.log('IFC Parser WASM UI loaded');
+    </script>
+</body>
+</html>
