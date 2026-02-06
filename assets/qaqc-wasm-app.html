@@ -230,7 +230,8 @@
         async function loadWasmRuntime() {
             try {
                 console.log('Loading .NET WebAssembly runtime...');
-
+                uploadArea.innerHTML = '<p style="color: #666;">⏳ Loading WebAssembly runtime...</p>';
+                parseBtn.disabled = true;
 
                 const { dotnet } = await import('./qaqc-wasm-app-assets/_framework/dotnet.js');
                 const runtime = await dotnet
@@ -246,6 +247,10 @@
 
                 wasmLoaded = true;
                 console.log('✓ .NET WASM runtime loaded successfully');
+                uploadArea.innerHTML = `
+                    <p style="font-size: 18px; margin: 0;">📁 Click to select an IFC file or drag & drop here</p>
+                    <p style="color: #666; font-size: 14px; margin: 10px 0 0 0;">Supported formats: .ifc</p>
+                `;
             } catch (error) {
                 console.error('Failed to load WASM runtime:', error);
                 console.error('Error details:', error.stack);
@@ -254,7 +259,7 @@
         }
 
         // Initialize WASM on page load
-        loadWasmRuntime();
+        await loadWasmRuntime();
 
         // Make functions global
         window.parseIfc = parseIfc;
