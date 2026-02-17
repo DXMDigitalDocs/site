@@ -298,7 +298,7 @@
                 console.log('Loading .NET WebAssembly runtime...');
 
 
-                const { dotnet } = await import('./_framework/dotnet.js');
+                const { dotnet } = await import('./qaqc-wasm-app-assets/_framework/dotnet.js');
                 const runtime = await dotnet
                     .withDiagnosticTracing(false)
                     .create();
