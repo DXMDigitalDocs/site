@@ -301,6 +301,11 @@
                 const { dotnet } = await import('./qaqc-wasm-app-assets/_framework/dotnet.js');
                 const runtime = await dotnet
                     .withDiagnosticTracing(false)
+                    .withConfig({
+                        environmentVariables: {
+                            "MONO_GC_PARAMS": "max-heap-size=2048m,soft-heap-limit=1500m"
+                        }
+                    })
                     .create();
 
                 // No .dll extension for Exe projects
