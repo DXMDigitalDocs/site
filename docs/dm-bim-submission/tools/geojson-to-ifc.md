@@ -2,7 +2,7 @@
 title: GeoJSON to IFC
 layout: default
 parent: Tools
-nav_order: 3
+nav_order: 4
 ---
 
 ## GeoJSON to IFC Converter (Works fully offline - no files are uploaded to external servers)

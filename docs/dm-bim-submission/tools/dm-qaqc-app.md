@@ -2,7 +2,7 @@
 title: DM QA/QC App
 layout: default
 parent: Tools
-nav_order: 1
+nav_order: 2
 ---
 
 This application is provided by DM to check IFC models for critical issues. The application can be downloaded from [here](https://bim.geodubai.ae/ebim/dmbim.qaqcchecker.zip).
