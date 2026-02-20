@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IFC Parser WASM</title>
+    <title>DM QA\QC and Building Card Generator</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -213,13 +213,21 @@
             .download-btn:hover {
                 background-color: #1b5e20;
             }
+
+        .card-btn {
+            background-color: #6a1b9a;
+        }
+
+            .card-btn:hover {
+                background-color: #4a148c;
+            }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🏗️ IFC Parser WebAssembly</h1>
-        <p>Upload one or more IFC files to analyze their contents. This parser runs entirely in your browser using WebAssembly.</p>
-
+        <h1>🏗️ DM QA\QC and Building Card Generator (Offline)</h1>
+        <p>Upload one or more IFC files to analyze their contents for QA/QC and generate building card outputs. This application runs entirely in your browser.</p>
+        <p>This is not a replacement for the official DM BIM Platform or its tools.</p>
         <div class="upload-area" id="uploadArea">
             <p style="font-size: 18px; margin: 0;">📁 Click to select IFC files or drag & drop here</p>
             <p style="color: #666; font-size: 14px; margin: 10px 0 0 0;">Supported formats: .ifc (multiple files supported)</p>
@@ -228,19 +236,20 @@
         <input type="file" id="fileInput" accept=".ifc" multiple>
 
         <div style="text-align: center;">
-            <button id="parseBtn" onclick="parseIfc()" disabled>Parse IFC Files</button>
+            <button id="parseBtn" onclick="parseIfc()" disabled>Run QA\QC</button>
+            <button id="buildCardBtn" class="card-btn" onclick="buildBuildingCard()" disabled>Generate Building Card</button>
             <button onclick="clearResults()">Clear</button>
         </div>
 
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>Parsing IFC file(s)...</p>
+            <p>Analyzing IFC file(s)...</p>
         </div>
 
         <div class="error" id="error"></div>
 
         <div id="results">
-            <h2>📊 IFC File Statistics</h2>
+            <h2>📊 QA\QC Statistics</h2>
             <div id="statsContent"></div>
         </div>
     </div>
@@ -249,20 +258,24 @@
         let selectedFiles = [];
         let dotnetRuntime = null;
         let wasmLoaded = false;
+        let filesParsed = false; // true once ParseFilesSequentially has run for current selection
 
         // Setup file upload
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const parseBtn = document.getElementById('parseBtn');
+        const buildCardBtn = document.getElementById('buildCardBtn');
 
         uploadArea.addEventListener('click', () => fileInput.click());
 
         function updateFileList(files) {
             selectedFiles = Array.from(files);
+            filesParsed = false; // new selection invalidates any cached parse
             if (selectedFiles.length > 0) {
                 const fileNames = selectedFiles.map(f => f.name).join(', ');
                 uploadArea.innerHTML = `<p style="color: #007acc;">✓ Selected ${selectedFiles.length} file(s): ${fileNames}</p>`;
                 parseBtn.disabled = false;
+                buildCardBtn.disabled = false;
             }
         }
 
@@ -293,7 +306,7 @@
         });
 
         // Load .NET WASM runtime
-        async function loadWasmRuntime() {
+            async function loadWasmRuntime() {
             try {
                 console.log('Loading .NET WebAssembly runtime...');
 
@@ -329,11 +342,14 @@
 
         // Store last results for CSV download
         let lastResults = null;
+        let filterCriticalOnly = false;
 
         // Make functions global
         window.parseIfc = parseIfc;
         window.clearResults = clearResults;
         window.downloadCsv = downloadCsv;
+        window.buildBuildingCard = buildBuildingCard;
+        window.toggleCriticalFilter = toggleCriticalFilter;
 
         async function parseIfc() {
             if (selectedFiles.length === 0) {
@@ -352,25 +368,28 @@
             parseBtn.disabled = true;
 
             try {
-                // Step 1: Prepare clean workspace on virtual filesystem
-                console.log('Step 1: Preparing workspace...');
-                window.IfcParserWasm.PrepareWorkspace();
+                if (!filesParsed) {
+                    // Step 1: Prepare clean workspace
+                    console.log('Step 1: Preparing workspace...');
+                    window.IfcParserWasm.PrepareWorkspace();
 
-                // Step 2: Read all files and write to virtual filesystem
-                console.log(`Step 2: Writing ${selectedFiles.length} file(s) to virtual FS...`);
-                for (const file of selectedFiles) {
-                    console.log(`Writing file: ${file.name}`);
-                    const arrayBuffer = await file.arrayBuffer();
-                    const bytes = new Uint8Array(arrayBuffer);
-                    console.log(`File size: ${bytes.length} bytes`);
-                    window.IfcParserWasm.WriteFile(file.name, bytes);
+                    // Step 2: Read all files and write to in-memory buffer
+                    console.log(`Step 2: Writing ${selectedFiles.length} file(s) to in-memory buffer...`);
+                    for (const file of selectedFiles) {
+                        console.log(`Writing file: ${file.name}`);
+                        const arrayBuffer = await file.arrayBuffer();
+                        const bytes = new Uint8Array(arrayBuffer);
+                        console.log(`File size: ${bytes.length} bytes`);
+                        window.IfcParserWasm.WriteFile(file.name, bytes);
+                    }
+
+                    await new Promise(r => setTimeout(r, 0));
+                } else {
+                    console.log('Reusing already-parsed IFC contents (skipping PrepareWorkspace + WriteFile).');
                 }
 
-                // Yield to UI
-                await new Promise(r => setTimeout(r, 0));
-
-                // Step 3: Process all files using System.IO
-                console.log('Step 3: Processing IFC files...');
+                // Run QA/QC validation
+                console.log('Running QA/QC validation...');
                 await new Promise(r => setTimeout(r, 0));
 
                 const jsonResult = window.IfcParserWasm.LoadIfcAndGetJson();
@@ -380,16 +399,17 @@
 
                 // Check if there was an error
                 if (stats.error) {
-                    showError(`IFC parsing error: ${stats.error}`);
+                    showError(`IFC analyzing error: ${stats.error}`);
                     console.error('Stack trace:', stats.stackTrace);
                     return;
                 }
 
-                console.log('IFC parsed successfully:', stats);
+                console.log('IFC analyzed successfully:', stats);
+                filesParsed = true;
                 displayResults(stats);
 
             } catch (error) {
-                showError(`Error parsing IFC: ${error.message}`);
+                showError(`Error analyzing IFC: ${error.message}`);
                 console.error('Full error:', error);
             } finally {
                 showLoading(false);
@@ -397,73 +417,180 @@
             }
         }
 
+        async function buildBuildingCard() {
+            if (selectedFiles.length === 0) {
+                showError('Please select at least one file first');
+                return;
+            }
+
+            if (!wasmLoaded) {
+                showError('WASM runtime is still loading, please wait...');
+                return;
+            }
+
+            hideError();
+            showLoading(true);
+            parseBtn.disabled = true;
+            buildCardBtn.disabled = true;
+
+            try {
+                if (!filesParsed) {
+                    // Step 1: Prepare clean workspace
+                    console.log('Step 1: Preparing workspace...');
+                    window.IfcParserWasm.PrepareWorkspace();
+
+                    // Step 2: Write files to in-memory buffer
+                    console.log(`Step 2: Writing ${selectedFiles.length} file(s) to in-memory buffer...`);
+                    for (const file of selectedFiles) {
+                        console.log(`Writing file: ${file.name}`);
+                        const arrayBuffer = await file.arrayBuffer();
+                        const bytes = new Uint8Array(arrayBuffer);
+                        window.IfcParserWasm.WriteFile(file.name, bytes);
+                    }
+
+                    document.getElementById('results').style.display = 'none';
+                    await new Promise(r => setTimeout(r, 0));
+                } else {
+                    console.log('Reusing already-parsed IFC contents (skipping PrepareWorkspace + WriteFile).');
+                }
+
+                // Build the Building Card — returns the zip file path
+                console.log('Building Building Card...');
+                const zipFilePath = window.IfcParserWasm.BuildBuildingCard();
+
+                // Check for a JSON error response
+                if (zipFilePath && zipFilePath.startsWith('{')) {
+                    const err = JSON.parse(zipFilePath);
+                    showError(`Building Card error: ${err.error}`);
+                    console.error('Stack trace:', err.stackTrace);
+                    return;
+                }
+
+                console.log('Building Card zip path:', zipFilePath);
+
+                // Step 4: Retrieve the zip bytes and trigger download
+                // GetOutputFile prepends "/tmp/output/" internally, so strip that prefix
+                // to get the relative path (e.g. "Temp/Card_xxx.zip").
+                const outputBase = '/tmp/output/';
+                const relativePath = zipFilePath.startsWith(outputBase)
+                    ? zipFilePath.slice(outputBase.length)
+                    : zipFilePath.split('/').pop();
+                const fileName = zipFilePath.split('/').pop();
+                const zipBytes = window.IfcParserWasm.GetOutputFile(relativePath);
+
+                const blob = new Blob([zipBytes], { type: 'application/zip' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                filesParsed = true;
+                console.log(`Downloaded: ${fileName}`);
+            } catch (error) {
+                showError(`Error building Building Card: ${error.message}`);
+                console.error('Full error:', error);
+            } finally {
+                showLoading(false);
+                parseBtn.disabled = false;
+                buildCardBtn.disabled = false;
+            }
+        }
+
         function displayResults(data) {
             lastResults = data;
+            filterCriticalOnly = false;
             const statsContent = document.getElementById('statsContent');
             const messages = data.messages || [];
 
+            const criticalCount = messages.filter(m => m.errorLevel === 'Critical').length;
+            const errorCount = messages.filter(m => m.errorLevel !== 'Critical').length;
+
             let html = `
-                    <div class="stat-card">
-                        <h3>📦 Total QA/QC Messages</h3>
-                        <p style="font-size: 32px; font-weight: bold; margin: 10px 0;">${(data.totalMessages || 0).toLocaleString()}</p>
+                <div class="stat-card">
+                    <h3>📦 Total QA/QC Messages</h3>
+                    <p style="font-size: 32px; font-weight: bold; margin: 10px 0;">${(data.totalMessages || 0).toLocaleString()}</p>
+                    <div style="display: flex; gap: 10px; margin-top: 4px;">
+                        <span class="badge-critical" style="font-size: 13px; padding: 4px 12px;">Critical: ${criticalCount}</span>
+                        <span class="badge-error" style="font-size: 13px; padding: 4px 12px;">Error: ${errorCount}</span>
                     </div>
-                `;
+                </div>
+            `;
 
             if (messages.length > 0) {
                 html += `
-                        <div style="text-align: right; margin: 10px 0;">
-                            <button class="download-btn" onclick="downloadCsv()">Download CSV</button>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0;">
+                        <button id="criticalFilterBtn" onclick="toggleCriticalFilter()" style="background-color: #c62828;">Show Critical Only</button>
+                        <button class="download-btn" onclick="downloadCsv()">Download CSV</button>
+                    </div>
+                    <div class="stat-card">
+                        <h3>QA/QC Results</h3>
+                        <div class="table-wrapper" id="tableWrapper">
+                            ${buildTableHtml(messages, false)}
                         </div>
-                        <div class="stat-card">
-                            <h3>QA/QC Results</h3>
-                            <div class="table-wrapper">
-                                <table class="results-table">
-                                    <thead>
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Source File</th>
-                                            <th>Entity ID</th>
-                                            <th>IFC Type</th>
-                                            <th>Category</th>
-                                            <th>Error Level</th>
-                                            <th>Message</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                    `;
-
-                messages.forEach((msg, i) => {
-                    const levelClass = msg.errorLevel === 'Critical' ? 'badge-critical' : 'badge-error';
-                    html += `
-                            <tr>
-                                <td>${i + 1}</td>
-                                <td>${escapeHtml(msg.sourceFile || '')}</td>
-                                <td>${msg.entityId}</td>
-                                <td>${escapeHtml(msg.entityIfcType || '')}</td>
-                                <td>${escapeHtml(msg.category || '')}</td>
-                                <td><span class="${levelClass}">${escapeHtml(msg.errorLevel || '')}</span></td>
-                                <td>${escapeHtml(msg.msg || '')}</td>
-                            </tr>
-                        `;
-                });
-
-                html += `
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    `;
+                    </div>
+                `;
             } else {
                 html += `
-                        <div class="stat-card">
-                            <h3>No Issues Found</h3>
-                            <p>All files passed QA/QC validation.</p>
-                        </div>
-                    `;
+                    <div class="stat-card">
+                        <h3>No Issues Found</h3>
+                        <p>All files passed QA/QC validation.</p>
+                    </div>
+                `;
             }
 
             statsContent.innerHTML = html;
             document.getElementById('results').style.display = 'block';
+        }
+
+        function buildTableHtml(messages, criticalOnly) {
+            const filtered = criticalOnly ? messages.filter(m => m.errorLevel === 'Critical') : messages;
+            let html = `
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Source File</th>
+                            <th>Entity ID</th>
+                            <th>IFC Type</th>
+                            <th>Category</th>
+                            <th>Error Level</th>
+                            <th>Message</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            filtered.forEach((msg, i) => {
+                const levelClass = msg.errorLevel === 'Critical' ? 'badge-critical' : 'badge-error';
+                html += `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${escapeHtml(msg.sourceFile || '')}</td>
+                        <td>${msg.entityId}</td>
+                        <td>${escapeHtml(msg.entityIfcType || '')}</td>
+                        <td>${escapeHtml(msg.category || '')}</td>
+                        <td><span class="${levelClass}">${escapeHtml(msg.errorLevel || '')}</span></td>
+                        <td>${escapeHtml(msg.msg || '')}</td>
+                    </tr>
+                `;
+            });
+            html += `</tbody></table>`;
+            return html;
+        }
+
+        function toggleCriticalFilter() {
+            filterCriticalOnly = !filterCriticalOnly;
+            const messages = lastResults?.messages || [];
+            const btn = document.getElementById('criticalFilterBtn');
+            if (filterCriticalOnly) {
+                btn.textContent = 'Show All';
+                btn.style.backgroundColor = '#007acc';
+            } else {
+                btn.textContent = 'Show Critical Only';
+                btn.style.backgroundColor = '#c62828';
+            }
+            document.getElementById('tableWrapper').innerHTML = buildTableHtml(messages, filterCriticalOnly);
         }
 
         function escapeHtml(text) {
@@ -523,12 +650,14 @@
             document.getElementById('results').style.display = 'none';
             document.getElementById('error').style.display = 'none';
             selectedFiles = [];
+            filesParsed = false;
             fileInput.value = '';
             parseBtn.disabled = true;
+            buildCardBtn.disabled = true;
             uploadArea.innerHTML = `
-                        <p style="font-size: 18px; margin: 0;">📁 Click to select IFC files or drag & drop here</p>
-                        <p style="color: #666; font-size: 14px; margin: 10px 0 0 0;">Supported formats: .ifc (multiple files supported)</p>
-                    `;
+                    <p style="font-size: 18px; margin: 0;">📁 Click to select IFC files or drag & drop here</p>
+                    <p style="color: #666; font-size: 14px; margin: 10px 0 0 0;">Supported formats: .ifc (multiple files supported)</p>
+                `;
         }
 
         console.log('IFC Parser WASM UI loaded');
