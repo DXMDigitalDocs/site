@@ -1,9 +1,7 @@
 ---
 layout: table_wrappers
 ---
-
 <!DOCTYPE html>
-
 <html lang="{{ site.lang | default: 'en-US' }}">
 {% include head.html %}
 <body>
@@ -44,7 +42,6 @@ layout: table_wrappers
     {% include components/mermaid.html %}
     {% endif %}
 
-    <!-- Dialogflow Messenger Chat Widget -->
     <df-messenger project-id="dxmdigitaldocs"
                   agent-id="519a0156-2ebd-48fb-acf1-be20ad52153c"
                   language-code="en"
@@ -54,13 +51,37 @@ layout: table_wrappers
         <df-messenger-chat-bubble chat-title="Bimo - Your BIM Submission AI Assistant">
         </df-messenger-chat-bubble>
     </df-messenger>
+
+    <script>
+        // Listen for the messenger to be fully loaded
+        window.addEventListener('df-messenger-loaded', () => {
+            const messenger = document.querySelector('df-messenger');
+
+            // Define the typical questions as clickable chips
+            const chipPayload = [
+                {
+                    "type": "chips",
+                    "options": [
+                        { "text": "BIM Submission Requirements" },
+                        { "text": "ISO 19650 Standards" },
+                        { "text": "Dubai Municipality Mandates" },
+                        { "text": "How to use the BIM Auditor?" }
+                    ]
+                }
+            ];
+
+            // This renders the buttons inside the chat window
+            messenger.renderCustomCard(chipPayload);
+        });
+    </script>
+
     <style>
         df-messenger {
             z-index: 999;
             position: fixed;
             --df-messenger-chat-window-width: 500px;
             --df-messenger-font-color: #000;
-            --df-messenger-font-family: Google Sans;
+            --df-messenger-font-family: "Google Sans", sans-serif;
             --df-messenger-chat-background: #f3f6fc;
             --df-messenger-message-user-background: #d3e3fd;
             --df-messenger-message-bot-background: #fff;
