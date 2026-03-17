@@ -17,6 +17,28 @@ nav_order: 1
     <df-messenger-chat chat-title="Chat with Dubai Building Code">
     </df-messenger-chat>
 </df-messenger>
+
+<script>
+    var _chipsRendered = false;
+    const _chipPayload = [{
+        "type": "chips",
+        "options": [
+            { "text": "How to calculate the total allowable building height?"},
+            { "text": "How to calculate Plot coverage?" }
+        ]
+    }];
+    window.addEventListener('df-response-received', function() {
+        if (_chipsRendered) return;
+        _chipsRendered = true;
+        const messenger = document.querySelector('df-messenger');
+        if (!messenger) return;
+        messenger.renderCustomCard(_chipPayload);
+    });
+    window.addEventListener('df-chat-open-changed', function(e) {
+        if (e.detail && !e.detail.isOpen) _chipsRendered = false;
+    });
+</script>
+
 <style>
     .back-link {
         padding: 12px 16px;
