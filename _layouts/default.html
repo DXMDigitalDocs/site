@@ -52,13 +52,9 @@ layout: table_wrappers
         </df-messenger-chat-bubble>
     </df-messenger>
 
-    {% raw %}
     <script>
-        // Listen for the messenger to be fully loaded
         window.addEventListener('df-messenger-loaded', () => {
             const messenger = document.querySelector('df-messenger');
-
-            // Define the typical questions as clickable chips
             const chipPayload = [
                 {
                     "type": "chips",
@@ -70,12 +66,10 @@ layout: table_wrappers
                     ]
                 }
             ];
-
-            // This renders the buttons inside the chat window
             messenger.renderCustomCard(chipPayload);
         });
     </script>
-    {% endraw %}
+
     <style>
         df-messenger {
             z-index: 999;
