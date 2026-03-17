@@ -53,9 +53,32 @@ layout: table_wrappers
     </df-messenger>
 
     <script>
+        console.log('[df-debug] Script executing');
+        console.log('[df-debug] df-messenger element found:', document.querySelector('df-messenger'));
+
+        const _dfDebugEvents = [
+            'df-messenger-loaded',
+            'df-messenger-chat-opened',
+            'df-messenger-ready',
+            'df-messenger-initial-response',
+            'df-response-received'
+        ];
+        _dfDebugEvents.forEach(function(evt) {
+            window.addEventListener(evt, function(e) {
+                console.log('[df-debug] Event fired on window:', evt, e);
+            });
+            const el = document.querySelector('df-messenger');
+            if (el) {
+                el.addEventListener(evt, function(e) {
+                    console.log('[df-debug] Event fired on element:', evt, e);
+                });
+            }
+        });
+
         function renderChips() {
+            console.log('[df-debug] renderChips called');
             const messenger = document.querySelector('df-messenger');
-            if (!messenger) return;
+            if (!messenger) { console.log('[df-debug] messenger element not found'); return; }
             const chipPayload = [
                 {
                     "type": "chips",
@@ -67,6 +90,7 @@ layout: table_wrappers
                     ]
                 }
             ];
+            console.log('[df-debug] calling renderCustomCard');
             messenger.renderCustomCard(chipPayload);
         }
         window.addEventListener('df-messenger-loaded', renderChips);
