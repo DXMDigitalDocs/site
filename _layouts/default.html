@@ -53,8 +53,9 @@ layout: table_wrappers
     </df-messenger>
 
     <script>
-        window.addEventListener('df-messenger-loaded', () => {
+        function renderChips() {
             const messenger = document.querySelector('df-messenger');
+            if (!messenger) return;
             const chipPayload = [
                 {
                     "type": "chips",
@@ -67,7 +68,9 @@ layout: table_wrappers
                 }
             ];
             messenger.renderCustomCard(chipPayload);
-        });
+        }
+        window.addEventListener('df-messenger-loaded', renderChips);
+        window.addEventListener('df-messenger-chat-opened', renderChips);
     </script>
 
     <style>
