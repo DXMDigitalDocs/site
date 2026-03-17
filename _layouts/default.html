@@ -1,9 +1,7 @@
 ---
 layout: table_wrappers
 ---
-
 <!DOCTYPE html>
-
 <html lang="{{ site.lang | default: 'en-US' }}">
 {% include head.html %}
 <body>
@@ -44,22 +42,47 @@ layout: table_wrappers
     {% include components/mermaid.html %}
     {% endif %}
 
-    <!-- Dialogflow Messenger Chat Widget -->
     <df-messenger project-id="dxmdigitaldocs"
                   agent-id="519a0156-2ebd-48fb-acf1-be20ad52153c"
                   language-code="en"
                   max-query-length="-1"
                   storage-option="none">
-    <df-messenger-chat-bubble chat-title="Bimo - Your BIM Submission AI Assistant">
-    </df-messenger-chat-bubble>
+        <df-messenger-chat-bubble chat-title="Bimo - Your BIM Submission AI Assistant">
+        </df-messenger-chat-bubble>
     </df-messenger>
+
+    <script>
+        const dfMessenger = document.querySelector('df-messenger');
+
+        // Wait for the messenger to load before sending the greeting and chips
+        dfMessenger.addEventListener('df-messenger-loaded', function () {
+
+            // 1. Render the Welcome Text
+            dfMessenger.renderCustomText("Hello! I'm Bimo. I can help you with BIM standards and submission requirements. What would you like to explore?");
+
+            // 2. Render the Suggested Questions (Chips)
+            const suggestionPayload = [
+                {
+                    "type": "chips",
+                    "options": [
+                        { "text": "BIM Submission Requirements" },
+                        { "text": "ISO 19650 Standards" },
+                        { "text": "How to use the BIM Auditor?" },
+                        { "text": "Dubai Municipality BIM Mandates" }
+                    ]
+                }
+            ];
+            dfMessenger.renderCustomCard(suggestionPayload);
+        });
+    </script>
+
     <style>
         df-messenger {
             z-index: 999;
             position: fixed;
             --df-messenger-chat-window-width: 500px;
             --df-messenger-font-color: #000;
-            --df-messenger-font-family: Google Sans;
+            --df-messenger-font-family: "Google Sans", sans-serif;
             --df-messenger-chat-background: #f3f6fc;
             --df-messenger-message-user-background: #d3e3fd;
             --df-messenger-message-bot-background: #fff;
