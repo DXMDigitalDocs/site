@@ -52,6 +52,7 @@ layout: table_wrappers
         </df-messenger-chat-bubble>
     </df-messenger>
 
+    {% raw %}
     <script>
         // Listen for the messenger to be fully loaded
         window.addEventListener('df-messenger-loaded', () => {
@@ -74,7 +75,7 @@ layout: table_wrappers
             messenger.renderCustomCard(chipPayload);
         });
     </script>
-
+    {% endraw %}
     <style>
         df-messenger {
             z-index: 999;
