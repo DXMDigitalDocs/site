@@ -53,48 +53,26 @@ layout: table_wrappers
     </df-messenger>
 
     <script>
-        console.log('[df-debug] Script executing');
-        console.log('[df-debug] df-messenger element found:', document.querySelector('df-messenger'));
-
-        const _dfDebugEvents = [
-            'df-messenger-loaded',
-            'df-messenger-chat-opened',
-            'df-messenger-ready',
-            'df-messenger-initial-response',
-            'df-response-received'
-        ];
-        _dfDebugEvents.forEach(function(evt) {
-            window.addEventListener(evt, function(e) {
-                console.log('[df-debug] Event fired on window:', evt, e);
-            });
-            const el = document.querySelector('df-messenger');
-            if (el) {
-                el.addEventListener(evt, function(e) {
-                    console.log('[df-debug] Event fired on element:', evt, e);
-                });
-            }
-        });
-
-        function renderChips() {
-            console.log('[df-debug] renderChips called');
+        var _chipsRendered = false;
+        const _chipPayload = [{
+            "type": "chips",
+            "options": [
+                { "text": "BIM Submission Requirements" },
+                { "text": "ISO 19650 Standards" },
+                { "text": "Dubai Municipality Mandates" },
+                { "text": "How to use the BIM Auditor?" }
+            ]
+        }];
+        window.addEventListener('df-response-received', function() {
+            if (_chipsRendered) return;
+            _chipsRendered = true;
             const messenger = document.querySelector('df-messenger');
-            if (!messenger) { console.log('[df-debug] messenger element not found'); return; }
-            const chipPayload = [
-                {
-                    "type": "chips",
-                    "options": [
-                        { "text": "BIM Submission Requirements" },
-                        { "text": "ISO 19650 Standards" },
-                        { "text": "Dubai Municipality Mandates" },
-                        { "text": "How to use the BIM Auditor?" }
-                    ]
-                }
-            ];
-            console.log('[df-debug] calling renderCustomCard');
-            messenger.renderCustomCard(chipPayload);
-        }
-        window.addEventListener('df-messenger-loaded', renderChips);
-        window.addEventListener('df-messenger-chat-opened', renderChips);
+            if (!messenger) return;
+            messenger.renderCustomCard(_chipPayload);
+        });
+        window.addEventListener('df-chat-open-changed', function(e) {
+            if (e.detail && !e.detail.isOpen) _chipsRendered = false;
+        });
     </script>
 
     <style>
