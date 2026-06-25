@@ -36,17 +36,15 @@ nav_order: 3
 .numbered-doc h4::before {
   content: counter(h1count) "." counter(h2count) "." counter(h3count) "." counter(h4count) " ";
 }
-.doc-toc ol {
+.doc-toc.doc-toc ol {
   counter-reset: toc-counter;
   list-style: none;
 }
-.doc-toc ol > li {
-  position: relative;
+.doc-toc.doc-toc ol > li {
   counter-increment: toc-counter;
 }
-.doc-toc ol > li::before {
-  position: absolute;
-  left: -1.6em;
+.doc-toc.doc-toc ol > li::before {
+  position: static;
   content: counters(toc-counter, ".") ". ";
 }
 </style>
